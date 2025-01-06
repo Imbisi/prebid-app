@@ -1,0 +1,44 @@
+/* Basic styling for the ad unit container */
+#div-gpt-ad-123456 {
+  margin: 0 auto; /* Center the ad unit */
+  padding: 10px;
+  box-sizing: border-box;
+  display: block;
+}
+
+/* Set default width and height for the ad unit */
+#div-gpt-ad-123456 {
+  width: 300px; /* Default width for mobile */
+  height: 250px; /* Default height */
+}
+
+/* Styles for larger screens */
+@media (min-width: 768px) {
+  #div-gpt-ad-123456 {
+    width: 728px; /* Width for tablet and desktop */
+    height: 90px;  /* Height for leaderboard banner */
+  }
+}
+
+/* Styles for smaller screens (mobile-first approach) */
+@media (max-width: 767px) {
+  #div-gpt-ad-123456 {
+    width: 300px; /* Mobile banner */
+    height: 250px; /* Mobile height */
+  }
+}
+
+/* Optional: Center align ads for larger screens */
+@media (min-width: 1024px) {
+  #div-gpt-ad-123456 {
+    margin-top: 20px;
+    margin-bottom: 20px;
+  }
+}
+
+/* Optionally hide ads on small screens */
+/*@media (max-width: 480px) {*/
+/*  #div-gpt-ad-123456 {*/
+/*    !*display: none; !* Hide ads on very small devices if needed *!*!*/
+/*  }*/
+/*}*/
