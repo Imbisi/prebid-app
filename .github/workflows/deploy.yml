@@ -51,3 +51,5 @@ jobs:
         with:
           github_token: ${{ secrets.GH_TOKEN }}  # Use the PAT secret here
           publish_dir: ./build
+          # This will pull any changes before pushing to avoid the "rejected" error
+          keep_files: true
