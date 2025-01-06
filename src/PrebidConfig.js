@@ -47,36 +47,29 @@ const validateBid = (bid) => {
 
 // Load GPT script
 const loadGPT = () => {
-  if (window.googletag && window.googletag.apiReady) return;
-
-  window.googletag = window.googletag || { cmd: [] };
-
-  const script = document.createElement("script");
-  script.src = "https://securepubads.g.doubleclick.net/tag/js/gpt.js";
-  script.async = true;
-  script.id = "gpt-script";
-
-  if (!document.getElementById("gpt-script")) {
-    document.head.appendChild(script);
+  if (!window.googletag) {
+    window.googletag = { cmd: [] };
   }
 
   window.googletag.cmd.push(() => {
     if (!window.googletag.pubads) return;
 
-    if (!window.googletag.pubadsReady) {
-      window.googletag.pubads().enableSingleRequest();
-      window.googletag.enableServices();
-    }
+    window.googletag.pubads().enableSingleRequest();
+    window.googletag.enableServices();
 
-    if (!window.adSlots) window.adSlots = {};
+    if (!window.adSlots) {
+      window.adSlots = {};
+    }
 
     if (!window.adSlots["div-gpt-ad-123456"]) {
       window.adSlots["div-gpt-ad-123456"] = window.googletag
           .defineSlot("/123456/test-ad", [300, 250], "div-gpt-ad-123456")
           .addService(window.googletag.pubads());
+      window.googletag.display("div-gpt-ad-123456"); // Ensure it is displayed
     }
   });
 };
+
 
 // 🔥 Prebid Analytics Function
 const setupPrebidAnalytics = () => {
@@ -151,27 +144,39 @@ const loadFallbackAd = () => {
 
 // Add ad units to pbjs queue and request bids
 const requestBids = () => {
+  if (!window.pbjs || !window.googletag) {
+    console.error("🚨 Prebid.js or Google Tag Manager is not loaded.");
+    return;
+  }
+
   window.pbjs.que.push(() => {
     window.pbjs.addAdUnits(adUnits);
     window.pbjs.requestBids({
-      bidsBackHandler: function (bidResponses) {
-        console.log("Bid responses:", bidResponses);
-        window.pbjs.setTargetingForGPTAsync();
+      bidsBackHandler: (bidResponses) => {
+        console.log("📢 Bid responses:", bidResponses);
 
-        // Refresh the ad slot after bids are returned
-        window.googletag.cmd.push(() => {
-          window.googletag.pubads().refresh();
-        });
+        const adSlot = window.adSlots?.["div-gpt-ad-123456"]; // Optional chaining
+        if (adSlot) {
+          window.pbjs.setTargetingForGPTAsync();
+          window.googletag.cmd.push(() => {
+            console.log("✅ Refreshing ad slot...");
+            window.googletag.pubads().refresh([adSlot]);
+          });
+        } else {
+          console.warn("⚠️ Ad slot not defined before bid response.");
+        }
 
-        // If no bids, manually trigger noBids fallback
-        if (Object.keys(bidResponses).length === 0) {
-          console.log("🚫 No bids received, manually triggering fallback ad.");
+        // Handle empty bid responses (fallback logic)
+        if (!bidResponses || Object.keys(bidResponses).length === 0) {
+          console.warn("🚫 No bids received, triggering fallback ad.");
           loadFallbackAd();
         }
       }
     });
   });
 };
+
+
 
 // Lazy-load ads when they come into view
 const lazyLoadAds = () => {
@@ -200,7 +205,7 @@ const lazyLoadAds = () => {
   observer.observe(adSlotElement);
 };
 
-const App = () => {
+const PrebidConfig = () => {
   useEffect(() => {
     loadGPT(); // Load Google Publisher Tags
     setupPrebidAnalytics(); // Set up Prebid.js Analytics
@@ -217,4 +222,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default PrebidConfig;
