@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/prebid-app/static/css/main.be87120d.css",
+    "main.js": "/prebid-app/static/js/main.e921880f.js",
+    "index.html": "/prebid-app/index.html",
+    "main.be87120d.css.map": "/prebid-app/static/css/main.be87120d.css.map",
+    "main.e921880f.js.map": "/prebid-app/static/js/main.e921880f.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.be87120d.css",
+    "static/js/main.e921880f.js"
+  ]
+}
