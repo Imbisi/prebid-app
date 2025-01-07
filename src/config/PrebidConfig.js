@@ -1,66 +1,64 @@
 import React, { useEffect, useRef } from "react";
-import "./App.css";
+import "../style/App.css";
 
-// Define the ad units
-const adUnitSizes = [[300, 250], [728, 90]]; // Sizes requested for the ad unit
+// Define demand partners (SSPs) with adapters
 const adUnits = [
   {
     code: "div-gpt-ad-123456",
     mediaTypes: {
-      banner: { sizes: adUnitSizes },
+      banner: {
+        sizes: [[300, 250], [728, 90]],
+      },
     },
     bids: [
-      { bidder: "appnexus", params: { placementId: 13144370 } },
-      { bidder: "rubicon", params: { accountId: 1001, siteId: 112233, zoneId: 445566 } },
+      { bidder: "appnexus", params: { placementId: 13144370 } }, // AppNexus Adapter
+      { bidder: "rubicon", params: { accountId: 1001, siteId: 112233, zoneId: 445566 } }, // Rubicon Adapter
     ],
   },
 ];
 
-// OpenRTB validation function
+// Determine dynamic floor price based on size & device
+const getFloorPrice = (size) => {
+  if (size[0] === 300 && size[1] === 250) return 0.5; // Mobile floor price
+  if (size[0] === 728 && size[1] === 90) return 1.0; // Desktop floor price
+  return 0.3; // Default floor price
+};
+
+// Validate incoming bids using OpenRTB protocol
 const validateBid = (bid) => {
   const errors = [];
 
-  // 1. Price Validation: Ensure the bid price is a valid positive number
-  if (typeof bid.price !== "number" || bid.price <= 0) {
-    errors.push("Invalid bid price");
+  // Price Validation
+  if (typeof bid.price !== "number" || bid.price <= getFloorPrice([bid.width, bid.height])) {
+    errors.push("Invalid or below-floor bid price");
   }
 
-  // 2. Advertiser Domain Validation: Ensure the domain is valid
-  const domainRegex = /^(https?:\/\/)?([a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+)(\/[^\s]*)?$/;
-  if (!domainRegex.test(bid.adomain)) {
-    errors.push("Invalid advertiser domain");
-  }
-
-  // 3. Creative Compatibility Check
-  const creativeSize = [bid.width, bid.height];
-  const isSizeCompatible = adUnitSizes.some(
-      (size) => size[0] === creativeSize[0] && size[1] === creativeSize[1]
-  );
-  if (!isSizeCompatible) {
-    errors.push("Creative size is not compatible with the requested sizes");
+  // Advertiser Domain Validation
+  if (!Array.isArray(bid.adomain) || bid.adomain.length === 0) {
+    errors.push("Missing advertiser domain");
   }
 
   return errors;
 };
 
-// Load GPT script safely
+// Load GPT (Google Publisher Tag) script safely
 const loadGPT = () => {
   window.googletag = window.googletag || { cmd: [] };
 
   window.googletag.cmd.push(() => {
-    if (!window.googletag.pubads || window.adSlots?.["div-gpt-ad-123456"]) return;
+    if (window.googletag.pubadsReady) return; // Prevent multiple loads
 
     window.googletag.pubads().enableSingleRequest();
     window.googletag.enableServices();
 
     window.adSlots = window.adSlots || {};
     window.adSlots["div-gpt-ad-123456"] = window.googletag
-        .defineSlot("/123456/test-ad", [300, 250], "div-gpt-ad-123456")
+        .defineSlot("/123456/test-ad", [[300, 250], [728, 90]], "div-gpt-ad-123456")
         .addService(window.googletag.pubads());
   });
 };
 
-// Setup Prebid Analytics
+// Setup Prebid.js analytics (Google Analytics)
 const setupPrebidAnalytics = () => {
   if (!window.pbjs) return;
 
@@ -90,7 +88,6 @@ const setupPrebidAnalytics = () => {
         console.error("❌ Invalid bid:", validationErrors);
         return;
       }
-      console.log("✅ Valid Bid:", bid);
     });
 
     window.pbjs.onEvent("auctionEnd", (auction) => {
@@ -110,24 +107,21 @@ const setupPrebidAnalytics = () => {
         value: bid.cpm,
       });
     });
-
-    console.log("✅ Prebid Events Tracking Initialized");
   });
 };
 
-// Load fallback ad
-const loadFallbackAd = (adSlotRef) => {
-  const adSlotElement = document.getElementById("div-gpt-ad-123456");
+// Load fallback ad if no valid bids received
+const loadFallbackAd = (adSlotId) => {
+  const adSlotElement = document.getElementById(adSlotId);
   if (!adSlotElement) return;
 
-  adSlotElement.innerHTML = "<p>Sorry, no ads are available right now. Please check back later.</p>";
-
+  adSlotElement.innerHTML = "<p>No ad available, showing fallback ad.</p>";
 };
 
 // Request bids and refresh ads
 const requestBids = () => {
   if (!window.pbjs || !window.googletag) {
-    console.error("🚨 Prebid.js or Google Tag Manager is not loaded.");
+    console.error("🚨 Prebid.js or GPT is not loaded.");
     return;
   }
 
@@ -148,11 +142,9 @@ const requestBids = () => {
           console.warn("⚠️ Ad slot not defined before bid response.");
         }
 
-
         if (!bidResponses || Object.keys(bidResponses).length === 0) {
-
           console.warn("🚫 No bids received, triggering fallback ad.");
-          loadFallbackAd();
+          loadFallbackAd("div-gpt-ad-123456");
         }
       },
     });
@@ -160,16 +152,17 @@ const requestBids = () => {
 };
 
 // Lazy-load ads when they come into view
-const lazyLoadAds = (adSlotRef) => {
-  if (!adSlotRef.current) return;
+const lazyLoadAds = (adSlotId) => {
+  const adSlotElement = document.getElementById(adSlotId);
+  if (!adSlotElement) return;
 
   const observer = new IntersectionObserver(
       (entries, observerInstance) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            console.log("🔄 Ad slot is in view, loading ad...");
+            console.log(`🔄 ${adSlotId} is in view, loading ad...`);
             window.googletag.cmd.push(() => {
-              window.googletag.pubads().refresh([window.adSlots["div-gpt-ad-123456"]]);
+              window.googletag.pubads().refresh([window.adSlots[adSlotId]]);
             });
             observerInstance.disconnect();
           }
@@ -178,7 +171,7 @@ const lazyLoadAds = (adSlotRef) => {
       { rootMargin: "0px 0px 200px 0px", threshold: 0.5 }
   );
 
-  observer.observe(adSlotRef.current);
+  observer.observe(adSlotElement);
 };
 
 const PrebidConfig = () => {
@@ -187,8 +180,11 @@ const PrebidConfig = () => {
   useEffect(() => {
     loadGPT();
     setupPrebidAnalytics();
-    requestBids();
-    lazyLoadAds(adSlotRef);
+    if (window.pbjs) {
+      requestBids();
+    } else {
+      console.error("🚨 Prebid.js is not loaded!");
+    }
   }, []);
 
   useEffect(() => {
@@ -197,6 +193,12 @@ const PrebidConfig = () => {
       console.log("✅ googletag.display('div-gpt-ad-123456') has run!");
       window.googletag.display("div-gpt-ad-123456");
     });
+  }, []);
+
+  useEffect(() => {
+    if (adSlotRef.current) {
+      lazyLoadAds("div-gpt-ad-123456");
+    }
   }, []);
 
   return (

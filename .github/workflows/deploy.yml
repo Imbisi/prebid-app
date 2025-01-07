@@ -1,31 +1,40 @@
-name: Header Bidding System
+name: Header Bidding System CI/CD
 
 on:
   push:
     branches:
-      - main  # Change this to your default branch (e.g., "master" or "develop")
+      - main  # Change if needed
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: 🛎️ Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up Node.js
+      - name: 🛠️ Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18
           cache: 'npm'
 
-      - name: Install dependencies
-        run: npm install
+      - name: 📦 Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
 
-      - name: Build React App
+      - name: 📥 Install dependencies
+        run: npm ci  # Faster and more reliable than npm install
+
+      - name: 🔨 Build React App
         run: npm run build
+        continue-on-error: false  # Fails if build errors occur
 
-      - name: Upload Build Artifacts
+      - name: 📤 Upload Build Artifacts
         uses: actions/upload-artifact@v3
         with:
           name: build
@@ -36,20 +45,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: 🛎️ Checkout repository
         uses: actions/checkout@v3
 
-      - name: Download Build Artifacts
+      - name: 📥 Download Build Artifacts
         uses: actions/download-artifact@v3
         with:
           name: build
           path: build
 
-      - name: Deploy to GitHub Pages
+      - name: 🚀 Deploy to GitHub Pages
         if: github.ref == 'refs/heads/main'
         uses: peaceiris/actions-gh-pages@v3
         with:
-          github_token: ${{ secrets.GH_TOKEN }}  # Use the PAT secret here
+          github_token: ${{ secrets.GH_TOKEN }}  # Ensure PAT with repo & workflow scopes
           publish_dir: ./build
-          # This will pull any changes before pushing to avoid the "rejected" error
           keep_files: true
+          force_orphan: true  # Ensures a clean GitHub Pages deployment

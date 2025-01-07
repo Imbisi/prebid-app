@@ -1,70 +1,89 @@
-# Getting Started with Create React PrebidConfig
+# Header Bidding System
 
-This project was bootstrapped with [Create React PrebidConfig](https://github.com/facebook/create-react-app).
+## Overview
+This project implements a **Header Bidding System** using **Prebid.js** to optimize ad revenue by integrating multiple demand partners.
 
-## Available Scripts
+## Features
+- **Prebid.js Integration** with at least two SSPs.
+- **Responsive Ad Units** for mobile and desktop.
+- **Bid Adapter Integration** for header bidding.
+- **Dynamic Floor Pricing** based on ad size and device type.
+- **Analytics Tracking** for bid performance and latency.
+- **Error Handling & Logging** for failed or invalid bids.
+- **Fallback Ads** when no bids are received.
+- **Bid Validation** using OpenRTB standards.
+- **Lazy Loading** to improve performance.
 
-In the project directory, you can run:
+## Setup & Installation
 
-### `npm start`
+### Prerequisites
+Ensure you have the following installed:
+- **Node.js (v18 or later)**
+- **npm (Node Package Manager)**
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### Clone the Repository
+```sh
+git clone https://github.com/imbisi/prebid-app.git
+cd prebid-app
+```
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### Install Dependencies
+```sh
+npm install
+```
 
-### `npm test`
+## Running the Project Locally
+To start the development server:
+```sh
+npm start
+```
+This runs the app in development mode. Open `http://localhost:3000/prebid-app` in a browser to view it.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Building the Project
+To generate an optimized production build:
+```sh
+npm run build
+```
+This creates a `build/` folder with the static files.
 
-### `npm run build`
+## Deployment
+The project is deployed using **GitHub Pages**. To deploy manually:
+```sh
+npm run deploy
+```
+This will:
+1. Run `npm run build` to generate the latest production files.
+2. Publish the `build/` directory to GitHub Pages.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### GitHub Actions (CI/CD)
+The project is configured with a GitHub Actions workflow (`.github/workflows/main.yml`) to automatically build and deploy the app on every push to the `main` branch.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Repository Structure
+```
+prebid-app/
+│-- .github/workflows/ # GitHub Actions workflow
+│-- public/          # Static assets
+│-- src/             # Source code
+│   ├── config/      # Prebid.js configuration
+│   ├── style/       # Styling files
+│   ├── App.js       # Main React App component
+│   ├── index.js     # Entry point
+│-- package.json     # Dependencies & scripts
+│-- .gitignore       # Ingored files and directories on git
+│-- README.md        # Project documentation
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Contributing
+Contributions are welcome! To contribute:
+1. Fork the repository.
+2. Create a new feature branch (`git checkout -b feature-branch`).
+3. Commit your changes (`git commit -m "Add new feature"`).
+4. Push to your branch (`git push origin feature-branch`).
+5. Open a Pull Request for review.
 
-### `npm run eject`
+## License
+This project is licensed under the **MIT License**.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## Author
+Developed by **Imbisi**. Feel free to reach out for any questions or improvements at **imbisigeoffrey@gmail.com**
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React PrebidConfig documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web PrebidConfig
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
